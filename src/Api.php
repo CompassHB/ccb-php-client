@@ -1,4 +1,5 @@
-<?php namespace CompassHB\Ccb;
+<?php
+namespace CompassHB\Ccb;
 
 use GuzzleHttp\Client;
 use SimpleXMLElement;
@@ -11,14 +12,14 @@ use SimpleXMLElement;
  */
 class Api
 {
-    /** @var string */
     private $church;
-
-    /** @var Client */
     private $client;
 
-    public function __construct($church, Client $client)
+    public function __construct($church, $auth)
     {
+
+        $client = new Client(["auth" => $auth]);
+
         $this->church = $church;
         $this->client = $client;
     }
@@ -39,14 +40,27 @@ class Api
     {
         $url = "https://{$this->church}.ccbchurch.com/api.php";
 
-        if (!isset($args['query'])) {
-            $args['query'] = [];
+        if (!isset($args["query"])) {
+            $args["query"] = [];
         }
 
-        $args['query']['srv'] = $serviceName;
+        $args["query"]["srv"] = $serviceName;
+        $request = $this->client->request($httpMethod, $url, $args);
+        $body = (string) $request->getBody();
 
-        $request = $this->client->createRequest($httpMethod, $url, $args);
+        return new Response($body);
+    }
 
-        return $this->client->send($request)->xml();
+    public function get($serviceName, array $parameters = [])
+    {
+        $args["query"] = $parameters;
+        return $this->srv("GET", $serviceName, $args);
+    }
+
+    public function post($serviceName, array $parameters = [], array $formParams = [])
+    {
+        $args["query"] = $parameters;
+        $args["form_params"] = $formParams;
+        return $this->srv("POST", $serviceName, $args);
     }
 }
