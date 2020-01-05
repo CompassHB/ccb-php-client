@@ -1,9 +1,7 @@
 language: php
 
 php:
-  - 5.5
-
-sudo: false
+  - 7.0
 
 before_install: composer selfupdate
 
